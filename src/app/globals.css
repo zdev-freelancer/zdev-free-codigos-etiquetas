@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+/*
+ * Códigos y Etiquetas — Design System
+ * Uniform, clean. Brand colors come from the logo only (cyan → indigo) over a
+ * neutral spine (near-black / grays / white). One typeface (Inter) + a touch of
+ * mono for small labels. Tokens live here (Tailwind v4 `@theme`).
+ */
+
+@theme {
+  /* ===== Neutral spine ===== */
+  --color-ink: #0a0a0a;
+  --color-graphite: #1c1c1e;
+  --color-space-gray: #48484a;
+  --color-steel: #86868b;
+  --color-silver: #d2d2d7;
+  --color-mist: #f5f5f7;
+  --color-snow: #ffffff;
+
+  /* ===== Brand — from the logo (the only colors) ===== */
+  --color-accent: #1b9fe0; /* logo cyan */
+  --color-accent-hover: #1789c4;
+  --color-accent-2: #2a2a8c; /* logo indigo */
+  --color-accent-link: #1f5fa8; /* readable link blue on white */
+
+  /* ===== Letter-spacing ===== */
+  --tracking-brand: 0.2em;
+  --tracking-label: 0.08em;
+}
+
+@theme inline {
+  /* Semantic aliases mapped to runtime vars so a theme can be swapped. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --surface: #f5f5f7;
+  --muted: #86868b;
+  --border: #e3e3e8;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+}
+
+@layer components {
+  /* Brand gradient (cyan → indigo, from the logo) for banners and CTAs. */
+  .bg-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-accent) 0%,
+      var(--color-accent-2) 100%
+    );
+  }
+  .text-brand-gradient {
+    background-image: linear-gradient(
+      120deg,
+      var(--color-accent) 0%,
+      var(--color-accent-2) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---- Hero graphic: gentle float + a single repeating scan sweep ---- */
+  @keyframes hg-float-kf {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes hg-scan-kf {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    85% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(96px);
+      opacity: 0;
+    }
+  }
+  .hg-float {
+    animation: hg-float-kf 6s ease-in-out infinite;
+  }
+  .hg-scan {
+    animation: hg-scan-kf 3.4s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hg-float,
+    .hg-scan {
+      animation: none;
+    }
+  }
+}
+
+@layer utilities {
+  /* Subtle scroll-reveal — content fades up as it enters the viewport. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s ease;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+}
