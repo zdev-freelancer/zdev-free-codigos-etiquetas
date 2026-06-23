@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { uploadViaSignedUrl } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 
 const inputClass =
   "w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-colors duration-300 ease-in-out focus:border-accent";
 
 /**
- * Image picker that uploads straight from the browser to Supabase Storage using
- * a server-minted signed upload URL (see /api/admin/upload-url). This avoids the
- * Server Action / Vercel request-body limits AND does not depend on the browser
- * client carrying the admin session. Only the resulting public URL is submitted
- * via the form's `image_url` field.
+ * Image picker that uploads straight from the browser to Supabase Storage via a
+ * server-minted signed URL, then submits only the public URL via `image_url`.
  */
 export function ImageUpload({
   productId,
@@ -31,28 +28,7 @@ export function ImageUpload({
     setStatus("uploading");
     setError(null);
     try {
-      // 1) ask the server (admin-only) for a signed upload URL
-      const res = await fetch("/api/admin/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename: file.name, productId }),
-      });
-      if (!res.ok) throw new Error("No se pudo autorizar la subida.");
-      const { path, token } = await res.json();
-
-      // 2) upload the file directly to Storage with the signed token
-      const supabase = createClient();
-      const { error: upErr } = await supabase.storage
-        .from("product-images")
-        .uploadToSignedUrl(path, token, file, {
-          contentType: file.type || undefined,
-        });
-      if (upErr) throw upErr;
-
-      setUrl(
-        supabase.storage.from("product-images").getPublicUrl(path).data
-          .publicUrl,
-      );
+      setUrl(await uploadViaSignedUrl(file, { productId }));
       setStatus("idle");
     } catch (err) {
       setStatus("error");

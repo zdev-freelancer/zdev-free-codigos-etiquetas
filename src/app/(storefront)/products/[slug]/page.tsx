@@ -5,7 +5,10 @@ import type { Metadata } from "next";
 import { getProductBySlug } from "@/lib/data/products";
 import { Container } from "@/components/ui/container";
 import { AddToBagButton } from "@/components/cart/add-to-bag-button";
+import { buttonClasses } from "@/components/ui/button";
+import { siteConfig } from "@/config/site";
 import { formatPrice } from "@/lib/utils";
+import { parseDownloads } from "@/types";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -47,6 +50,8 @@ export default async function ProductPage({
   const image = product.product_images?.[0];
   const stock = product.inventory?.stock_level ?? 0;
   const soldOut = stock <= 0;
+  const isQuote = product.pricing_mode === "quote";
+  const downloads = parseDownloads(product.downloads);
 
   const specs: { label: string; value: string }[] = [];
   if (product.material) specs.push({ label: "Material", value: product.material });
@@ -119,40 +124,94 @@ export default async function ProductPage({
             {product.name}
           </h1>
 
-          <p className="mt-4 text-xl text-space-gray">
-            {formatPrice(product.price, product.currency)}
-          </p>
+          {isQuote ? (
+            <div className="mt-4">
+              <p className="text-xl font-medium text-foreground">
+                Precio a cotizar
+              </p>
+              <p className="mt-1 text-sm text-space-gray">
+                Solicita una cotización a medida para este producto.
+              </p>
+            </div>
+          ) : (
+            <p className="mt-4 text-xl text-space-gray">
+              {formatPrice(product.price, product.currency)}
+            </p>
+          )}
 
-          {product.description && (
+          {product.show_description && product.description && (
             <p className="mt-6 max-w-prose text-base leading-relaxed text-space-gray">
               {product.description}
             </p>
           )}
 
           <div className="mt-8">
-            <AddToBagButton
-              product={product}
-              label="Agregar a la bolsa"
-              className="h-14 w-full text-sm sm:max-w-sm"
-            />
+            {isQuote ? (
+              <Link
+                href={siteConfig.quoteUrl}
+                className={buttonClasses(
+                  "primary",
+                  "h-14 w-full text-sm sm:max-w-sm",
+                )}
+              >
+                Solicitar cotización
+              </Link>
+            ) : (
+              <AddToBagButton
+                product={product}
+                label="Agregar a la bolsa"
+                className="h-14 w-full text-sm sm:max-w-sm"
+              />
+            )}
           </div>
 
           {/* Structural spec sheet */}
-          <dl className="mt-12 border-t border-border">
-            {specs.map((spec) => (
-              <div
-                key={spec.label}
-                className="flex items-baseline justify-between gap-6 border-b border-border py-4"
-              >
-                <dt className="font-mono text-xs uppercase tracking-label text-muted">
-                  {spec.label}
-                </dt>
-                <dd className="text-right text-sm text-foreground">
-                  {spec.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          {product.show_specs && specs.length > 0 && (
+            <dl className="mt-12 border-t border-border">
+              {specs.map((spec) => (
+                <div
+                  key={spec.label}
+                  className="flex items-baseline justify-between gap-6 border-b border-border py-4"
+                >
+                  <dt className="font-mono text-xs uppercase tracking-label text-muted">
+                    {spec.label}
+                  </dt>
+                  <dd className="text-right text-sm text-foreground">
+                    {spec.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
+          {/* Downloads */}
+          {product.show_downloads && downloads.length > 0 && (
+            <section className="mt-12">
+              <h2 className="font-mono text-xs uppercase tracking-label text-muted">
+                Descargables
+              </h2>
+              <ul className="mt-4 border-t border-border">
+                {downloads.map((d, i) => (
+                  <li key={i}>
+                    <a
+                      href={d.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-4 border-b border-border py-4 text-sm text-foreground transition-colors duration-300 ease-in-out hover:text-accent-link"
+                    >
+                      <span>{d.label}</span>
+                      <span
+                        aria-hidden
+                        className="font-medium text-accent-link"
+                      >
+                        ↓ Descargar
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </div>
     </Container>

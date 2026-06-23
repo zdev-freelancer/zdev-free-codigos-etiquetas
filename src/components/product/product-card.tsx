@@ -14,6 +14,7 @@ export function ProductCard({
   const image = product.product_images?.[0];
   const stock = product.inventory?.stock_level ?? 0;
   const soldOut = stock <= 0;
+  const isQuote = product.pricing_mode === "quote";
 
   return (
     <div className="group relative flex flex-col">
@@ -35,8 +36,8 @@ export function ProductCard({
           </span>
         )}
 
-        {/* Quick add — always visible on touch, reveals on hover on desktop. */}
-        {!soldOut && (
+        {/* Quick add — only for fixed-price products in stock. */}
+        {!soldOut && !isQuote && (
           <div className="absolute inset-x-3 bottom-3 z-20 md:translate-y-1 md:opacity-0 md:transition-all md:duration-300 md:ease-in-out md:group-hover:translate-y-0 md:group-hover:opacity-100">
             <AddToBagButton product={product} className="w-full" />
           </div>
@@ -58,7 +59,7 @@ export function ProductCard({
         )}
         <h3 className="text-sm font-medium text-foreground">{product.name}</h3>
         <p className="text-sm text-space-gray">
-          {formatPrice(product.price, product.currency)}
+          {isQuote ? "Cotización" : formatPrice(product.price, product.currency)}
         </p>
       </div>
     </div>

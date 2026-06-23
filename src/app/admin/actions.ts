@@ -22,16 +22,38 @@ export async function saveProduct(formData: FormData) {
     .map((c) => c.trim())
     .filter(Boolean);
 
+  // Parse the downloads list (serialized JSON from DownloadsManager).
+  let downloads: { label: string; url: string }[] = [];
+  try {
+    const parsed = JSON.parse(field(formData, "downloads") || "[]");
+    if (Array.isArray(parsed)) {
+      downloads = parsed
+        .filter((d) => d && typeof d.url === "string" && d.url)
+        .map((d) => ({
+          label: String(d.label ?? "").trim().slice(0, 120) || "Descarga",
+          url: String(d.url),
+        }));
+    }
+  } catch {
+    downloads = [];
+  }
+
   const payload = {
     slug: field(formData, "slug"),
     name,
     description: field(formData, "description") || null,
-    price: Number(formData.get("price")),
+    price: Number(formData.get("price")) || 0,
     currency: (field(formData, "currency") || "PEN") as Currency,
     collection: field(formData, "collection") || null,
     material: field(formData, "material") || null,
     compatibility,
     is_featured: formData.get("is_featured") === "on",
+    pricing_mode:
+      field(formData, "pricing_mode") === "quote" ? "quote" : "fixed",
+    show_description: formData.get("show_description") === "on",
+    show_specs: formData.get("show_specs") === "on",
+    show_downloads: formData.get("show_downloads") === "on",
+    downloads,
   };
 
   let productId = id;

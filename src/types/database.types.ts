@@ -180,11 +180,16 @@ export type Database = {
           created_at: string
           currency: Database["public"]["Enums"]["currency_code"]
           description: string | null
+          downloads: Json
           id: string
           is_featured: boolean
           material: string | null
           name: string
           price: number
+          pricing_mode: string
+          show_description: boolean
+          show_downloads: boolean
+          show_specs: boolean
           slug: string
           status: string
           tenant_id: string
@@ -195,11 +200,16 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_code"]
           description?: string | null
+          downloads?: Json
           id?: string
           is_featured?: boolean
           material?: string | null
           name: string
           price: number
+          pricing_mode?: string
+          show_description?: boolean
+          show_downloads?: boolean
+          show_specs?: boolean
           slug: string
           status?: string
           tenant_id: string
@@ -210,11 +220,16 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_code"]
           description?: string | null
+          downloads?: Json
           id?: string
           is_featured?: boolean
           material?: string | null
           name?: string
           price?: number
+          pricing_mode?: string
+          show_description?: boolean
+          show_downloads?: boolean
+          show_specs?: boolean
           slug?: string
           status?: string
           tenant_id?: string

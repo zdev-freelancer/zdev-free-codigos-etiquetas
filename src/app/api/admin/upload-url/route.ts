@@ -11,13 +11,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function POST(request: Request) {
   const { tenantId } = await requireAdmin();
 
-  let body: { filename?: string; productId?: string };
+  let body: { filename?: string; productId?: string; bucket?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Solicitud inválida." }, { status: 400 });
   }
 
+  const bucket =
+    body.bucket === "product-files" ? "product-files" : "product-images";
   const ext = (body.filename?.split(".").pop() || "bin")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
   const { data, error } = await admin.storage
-    .from("product-images")
+    .from(bucket)
     .createSignedUploadUrl(path);
 
   if (error || !data) {
@@ -36,5 +38,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ path: data.path, token: data.token });
+  return NextResponse.json({ path: data.path, token: data.token, bucket });
 }

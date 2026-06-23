@@ -18,6 +18,21 @@ export type ProductWithImages = Product & {
   inventory: Pick<Inventory, "stock_level"> | null;
 };
 
+/** A downloadable file attached to a product (datasheet, manual, etc.). */
+export type ProductDownload = { label: string; url: string };
+
+/** Safely read the product's `downloads` jsonb column as a typed list. */
+export function parseDownloads(value: unknown): ProductDownload[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (d): d is ProductDownload =>
+      !!d &&
+      typeof d === "object" &&
+      typeof (d as ProductDownload).label === "string" &&
+      typeof (d as ProductDownload).url === "string",
+  );
+}
+
 // ---- App-level (client) types ----
 export interface CartItem {
   productId: string;
