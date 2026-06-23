@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { saveProduct, deleteProduct } from "@/app/admin/actions";
 import { buttonClasses } from "@/components/ui/button";
+import { ImageUpload } from "@/components/admin/image-upload";
 import { cn } from "@/lib/utils";
 import type { ProductWithImages } from "@/types";
 
@@ -29,7 +30,13 @@ function Field({
   );
 }
 
-export function ProductForm({ product }: { product?: ProductWithImages }) {
+export function ProductForm({
+  product,
+  tenantId,
+}: {
+  product?: ProductWithImages;
+  tenantId: string;
+}) {
   const image = product?.product_images?.[0]?.image_url ?? "";
   const stock = product?.inventory?.stock_level ?? 0;
 
@@ -133,24 +140,14 @@ export function ProductForm({ product }: { product?: ProductWithImages }) {
           />
         </Field>
 
-        <Field label="URL de imagen" hint="Enlace público, o sube un archivo abajo">
-          <input
-            name="image_url"
-            defaultValue={image}
-            placeholder="https://…"
-            className={inputClass}
-          />
-        </Field>
-
         <Field
-          label="Subir imagen"
-          hint="Si eliges un archivo, reemplaza la URL de arriba (se guarda en Storage del tenant)"
+          label="Imagen del producto"
+          hint="Sube un archivo (va directo a Storage) o pega una URL pública"
         >
-          <input
-            name="image_file"
-            type="file"
-            accept="image/*"
-            className={cn(inputClass, "py-2")}
+          <ImageUpload
+            tenantId={tenantId}
+            productId={product?.id}
+            defaultUrl={image}
           />
         </Field>
 

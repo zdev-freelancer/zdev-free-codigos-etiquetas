@@ -15,7 +15,7 @@ export default async function EditProductPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  const { tenantId } = await requireAdmin();
   const { id } = await params;
   const product = await getProductById(id);
 
@@ -29,7 +29,7 @@ export default async function EditProductPage({
           Editar producto
         </h1>
         <div className="mt-8">
-          <ProductForm product={product} />
+          <ProductForm product={product} tenantId={tenantId} />
         </div>
       </div>
     </>

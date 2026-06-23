@@ -61,27 +61,9 @@ export async function saveProduct(formData: FormData) {
       { onConflict: "product_id" },
     );
 
-  // Image: an uploaded file (stored under the tenant's Storage folder) takes
-  // precedence over a pasted URL.
-  let imageUrl = field(formData, "image_url");
-  const file = formData.get("image_file");
-  if (file instanceof File && file.size > 0) {
-    const ext = (file.name.split(".").pop() || "bin")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
-    const path = `${tenantId}/${productId}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(path, file, {
-        upsert: true,
-        contentType: file.type || undefined,
-      });
-    if (uploadError) {
-      throw new Error(`No se pudo subir la imagen: ${uploadError.message}`);
-    }
-    imageUrl = supabase.storage.from("product-images").getPublicUrl(path)
-      .data.publicUrl;
-  }
+  // Image URL is submitted by the form; the file is uploaded client-side
+  // straight to Storage (see ImageUpload), avoiding Server Action body limits.
+  const imageUrl = field(formData, "image_url");
 
   await supabase.from("product_images").delete().eq("product_id", productId);
   if (imageUrl) {
