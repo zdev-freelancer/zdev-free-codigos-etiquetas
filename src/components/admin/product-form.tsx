@@ -30,13 +30,7 @@ function Field({
   );
 }
 
-export function ProductForm({
-  product,
-  tenantId,
-}: {
-  product?: ProductWithImages;
-  tenantId: string;
-}) {
+export function ProductForm({ product }: { product?: ProductWithImages }) {
   const image = product?.product_images?.[0]?.image_url ?? "";
   const stock = product?.inventory?.stock_level ?? 0;
 
@@ -144,11 +138,7 @@ export function ProductForm({
           label="Imagen del producto"
           hint="Sube un archivo (va directo a Storage) o pega una URL pública"
         >
-          <ImageUpload
-            tenantId={tenantId}
-            productId={product?.id}
-            defaultUrl={image}
-          />
+          <ImageUpload productId={product?.id} defaultUrl={image} />
         </Field>
 
         <label className="flex items-center gap-3">

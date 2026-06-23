@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewProductPage() {
-  const { tenantId } = await requireAdmin();
+  await requireAdmin();
 
   return (
     <>
@@ -19,7 +19,7 @@ export default async function NewProductPage() {
           Nuevo producto
         </h1>
         <div className="mt-8">
-          <ProductForm tenantId={tenantId} />
+          <ProductForm />
         </div>
       </div>
     </>

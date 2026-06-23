@@ -8,17 +8,16 @@ const inputClass =
   "w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-colors duration-300 ease-in-out focus:border-accent";
 
 /**
- * Uploads the chosen image straight from the browser to Supabase Storage
- * (the admin's session satisfies the per-tenant RLS), then submits only the
- * resulting public URL via the form's `image_url` field. This avoids the
- * Server Action / Vercel request-body size limits entirely.
+ * Image picker that uploads straight from the browser to Supabase Storage using
+ * a server-minted signed upload URL (see /api/admin/upload-url). This avoids the
+ * Server Action / Vercel request-body limits AND does not depend on the browser
+ * client carrying the admin session. Only the resulting public URL is submitted
+ * via the form's `image_url` field.
  */
 export function ImageUpload({
-  tenantId,
   productId,
   defaultUrl = "",
 }: {
-  tenantId: string;
   productId?: string;
   defaultUrl?: string;
 }) {
@@ -32,18 +31,24 @@ export function ImageUpload({
     setStatus("uploading");
     setError(null);
     try {
+      // 1) ask the server (admin-only) for a signed upload URL
+      const res = await fetch("/api/admin/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, productId }),
+      });
+      if (!res.ok) throw new Error("No se pudo autorizar la subida.");
+      const { path, token } = await res.json();
+
+      // 2) upload the file directly to Storage with the signed token
       const supabase = createClient();
-      const ext = (file.name.split(".").pop() || "bin")
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
-      const path = `${tenantId}/${productId ?? "nuevos"}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("product-images")
-        .upload(path, file, {
-          upsert: true,
+        .uploadToSignedUrl(path, token, file, {
           contentType: file.type || undefined,
         });
       if (upErr) throw upErr;
+
       setUrl(
         supabase.storage.from("product-images").getPublicUrl(path).data
           .publicUrl,
