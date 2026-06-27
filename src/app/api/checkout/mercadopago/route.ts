@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentTenant, getTenantPaymentConfig } from "@/lib/tenant";
+import { generateTrackingCode } from "@/config/orders";
 
 interface CheckoutBody {
   items?: { productId: string; quantity: number }[];
@@ -106,15 +107,21 @@ export async function POST(request: Request) {
 
   // Record a guest order server-side when the service role is available.
   let orderId: string | null = null;
+  let trackingCode: string | null = null;
   let reference = "CYE-" + Date.now().toString(36).slice(-6).toUpperCase();
 
   if (hasServiceRole) {
     const admin = createAdminClient();
+    const code = generateTrackingCode();
     const { data: order, error: orderError } = await admin
       .from("orders")
       .insert({
         tenant_id: tenant.id,
+        kind: "sale",
         status: "pending",
+        fulfillment: "shipping",
+        tracking_status: "pagado",
+        tracking_code: code,
         total_amount: total,
         currency,
         email: payload.payer?.email ?? null,
@@ -126,7 +133,8 @@ export async function POST(request: Request) {
 
     if (!orderError && order) {
       orderId = order.id;
-      reference = order.id;
+      trackingCode = code;
+      reference = code;
       await admin.from("order_items").insert(
         lineItems.map((i) => ({
           order_id: order.id,
@@ -139,7 +147,7 @@ export async function POST(request: Request) {
   }
 
   if (!accessToken) {
-    return NextResponse.json({ configured: false, reference, orderId });
+    return NextResponse.json({ configured: false, reference, orderId, trackingCode });
   }
 
   const origin = request.headers.get("origin") ?? siteConfig.url;
@@ -172,6 +180,7 @@ export async function POST(request: Request) {
       init_point: result.init_point,
       reference,
       orderId,
+      trackingCode,
     });
   } catch (error) {
     console.error("Mercado Pago preference error", error);

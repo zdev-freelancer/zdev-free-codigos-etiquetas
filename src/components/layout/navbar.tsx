@@ -98,6 +98,12 @@ export function Navbar({ brand }: { brand: TenantBrand }) {
 
           <div className="flex items-center gap-4">
             <Link
+              href="/rastreo"
+              className="hidden text-sm text-space-gray transition-colors duration-300 ease-in-out hover:text-foreground lg:inline"
+            >
+              Rastrear pedido
+            </Link>
+            <Link
               href={siteConfig.quoteUrl}
               className={buttonClasses(
                 "primary",
@@ -155,6 +161,13 @@ export function Navbar({ brand }: { brand: TenantBrand }) {
                 ))}
               </div>
 
+              <Link
+                href="/rastreo"
+                onClick={() => setMobileOpen(false)}
+                className="mt-4 border-t border-border pt-4 text-sm text-foreground"
+              >
+                Rastrear pedido
+              </Link>
               <Link
                 href={siteConfig.quoteUrl}
                 onClick={() => setMobileOpen(false)}

@@ -6,7 +6,6 @@ import { getProductBySlug } from "@/lib/data/products";
 import { Container } from "@/components/ui/container";
 import { AddToBagButton } from "@/components/cart/add-to-bag-button";
 import { buttonClasses } from "@/components/ui/button";
-import { siteConfig } from "@/config/site";
 import { formatPrice } from "@/lib/utils";
 import { parseDownloads } from "@/types";
 
@@ -148,7 +147,7 @@ export default async function ProductPage({
           <div className="mt-8">
             {isQuote ? (
               <Link
-                href={siteConfig.quoteUrl}
+                href={`/cotizar?producto=${product.slug}`}
                 className={buttonClasses(
                   "primary",
                   "h-14 w-full text-sm sm:max-w-sm",

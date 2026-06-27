@@ -162,6 +162,28 @@ export async function saveHomeContent(formData: FormData) {
   redirect("/admin/content");
 }
 
+/** Update an order's tracking status (and, for sales, the fulfillment method). */
+export async function updateOrderStatus(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = field(formData, "id");
+  if (!id) return;
+
+  const trackingStatus = field(formData, "tracking_status");
+  const fulfillment = field(formData, "fulfillment");
+
+  const update: { tracking_status: string; fulfillment?: string } = {
+    tracking_status: trackingStatus,
+  };
+  if (fulfillment === "shipping" || fulfillment === "pickup") {
+    update.fulfillment = fulfillment;
+  }
+
+  const { error } = await supabase.from("orders").update(update).eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/orders");
+}
+
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();

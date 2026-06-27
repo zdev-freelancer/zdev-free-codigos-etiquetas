@@ -88,12 +88,17 @@ export type Database = {
           currency: Database["public"]["Enums"]["currency_code"]
           email: string | null
           full_name: string | null
+          fulfillment: string | null
           id: string
+          kind: string
+          notes: string | null
           payment_provider: string | null
           payment_reference: string | null
           phone: string | null
           shipping_address: Json | null
           shipping_district: string | null
+          tracking_code: string | null
+          tracking_status: string | null
           status: Database["public"]["Enums"]["order_status"]
           tenant_id: string
           total_amount: number
@@ -104,12 +109,17 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_code"]
           email?: string | null
           full_name?: string | null
+          fulfillment?: string | null
           id?: string
+          kind?: string
+          notes?: string | null
           payment_provider?: string | null
           payment_reference?: string | null
           phone?: string | null
           shipping_address?: Json | null
           shipping_district?: string | null
+          tracking_code?: string | null
+          tracking_status?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           tenant_id: string
           total_amount: number
@@ -120,12 +130,17 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_code"]
           email?: string | null
           full_name?: string | null
+          fulfillment?: string | null
           id?: string
+          kind?: string
+          notes?: string | null
           payment_provider?: string | null
           payment_reference?: string | null
           phone?: string | null
           shipping_address?: Json | null
           shipping_district?: string | null
+          tracking_code?: string | null
+          tracking_status?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           tenant_id?: string
           total_amount?: number

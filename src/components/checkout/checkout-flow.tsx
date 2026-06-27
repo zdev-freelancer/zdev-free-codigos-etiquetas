@@ -117,8 +117,10 @@ export function CheckoutFlow() {
         return;
       }
 
-      // Demo fallback — Mercado Pago credentials not configured yet.
-      const reference = "CYE-" + Date.now().toString(36).slice(-6).toUpperCase();
+      // Demo fallback — Mercado Pago credentials not configured yet. Use the
+      // server-issued tracking code when available.
+      const reference =
+        data.reference ?? "CYE-" + Date.now().toString(36).slice(-6).toUpperCase();
       trackPurchase({ transactionId: reference, value: total, currency, items });
       setConfirmation({
         reference,
@@ -410,14 +412,20 @@ function ConfirmationView({
         ¡Gracias por tu compra!
       </h1>
       <p className="mt-4 text-sm leading-relaxed text-space-gray">
-        Tu pedido{" "}
-        <span className="font-medium text-foreground">
+        Tu código de seguimiento es{" "}
+        <span className="font-semibold text-foreground">
           {confirmation.reference}
-        </span>{" "}
-        fue registrado. Enviamos la confirmación a{" "}
+        </span>
+        . Enviamos la confirmación a{" "}
         <span className="font-medium text-foreground">{email}</span> y
         coordinaremos la entrega en {confirmation.district}.
       </p>
+      <Link
+        href={`/rastreo?code=${confirmation.reference}`}
+        className="mt-3 text-sm font-medium text-accent-link transition-opacity duration-300 ease-in-out hover:opacity-70"
+      >
+        Rastrear mi pedido ›
+      </Link>
 
       <div className="mt-10 w-full rounded-2xl border border-border p-6 text-left">
         <h2 className="font-mono text-xs uppercase tracking-label text-muted">
