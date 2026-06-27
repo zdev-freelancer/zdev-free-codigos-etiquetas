@@ -6,6 +6,7 @@ import { HeroGraphic } from "@/components/ui/hero-graphic";
 import { buttonClasses } from "@/components/ui/button";
 import { catalogCategories, siteConfig } from "@/config/site";
 import { resolveHomeContent } from "@/config/home-content";
+import { BlogBlocks } from "@/components/blog/blog-blocks";
 import { getProducts } from "@/lib/data/products";
 import { getCurrentTenant } from "@/lib/tenant";
 
@@ -157,6 +158,17 @@ export default async function Home() {
           </div>
         </Container>
       </section>
+
+      {/* Extra blocks (managed from the admin) */}
+      {c.blocks.length > 0 && (
+        <section className="border-t border-border">
+          <Container className="py-16 sm:py-20">
+            <Reveal>
+              <BlogBlocks blocks={c.blocks} />
+            </Reveal>
+          </Container>
+        </section>
+      )}
 
       {/* Corporate banner */}
       <section className="pb-20">

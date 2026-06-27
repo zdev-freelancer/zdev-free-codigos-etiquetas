@@ -2,14 +2,16 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth";
 import { getCurrentTenant } from "@/lib/tenant";
-import { saveHomeContent } from "@/app/admin/actions";
+import { saveHomeContent, saveAboutContent } from "@/app/admin/actions";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { BlocksEditor } from "@/components/admin/blocks-editor";
 import { buttonClasses } from "@/components/ui/button";
 import { resolveHomeContent } from "@/config/home-content";
+import { resolveAboutContent } from "@/config/about-content";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Contenido del inicio",
+  title: "Gestión de contenido",
   robots: { index: false },
 };
 
@@ -66,165 +68,123 @@ function Group({
   );
 }
 
-export default async function ContentPage() {
+export default async function ContentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   await requireAdmin();
+  const sp = await searchParams;
+  const tab = sp.tab === "quienes" ? "quienes" : "inicio";
+
   const tenant = await getCurrentTenant();
-  const c = resolveHomeContent(tenant.home_content);
+  const home = resolveHomeContent(tenant.home_content);
+  const about = resolveAboutContent(tenant.about_content);
+
+  const tabs = [
+    { key: "inicio", label: "Inicio", href: "/admin/content?tab=inicio" },
+    { key: "quienes", label: "Quiénes Somos", href: "/admin/content?tab=quienes" },
+  ];
 
   return (
     <AdminShell>
-      <form action={saveHomeContent} className="flex flex-col gap-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Contenido del inicio
-            </h1>
-            <p className="mt-1 text-sm text-muted">
-              Edita los textos de las secciones de la página de inicio.
-            </p>
-          </div>
-          <button type="submit" className={buttonClasses("primary")}>
-            Guardar cambios
-          </button>
-        </div>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        Gestión de contenido
+      </h1>
 
-        <Group title="Hero (sección principal)">
-          <Field
-            label="Antetítulo"
-            name="hero_eyebrow"
-            defaultValue={c.hero.eyebrow}
-          />
-          <Field
-            label="Título"
-            name="hero_title"
-            defaultValue={c.hero.title}
-            textarea
-          />
-          <Field
-            label="Subtítulo"
-            name="hero_subtitle"
-            defaultValue={c.hero.subtitle}
-            textarea
-          />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field
-              label="Botón principal"
-              name="hero_cta_primary"
-              defaultValue={c.hero.ctaPrimary}
-              hint="Enlaza al catálogo"
-            />
-            <Field
-              label="Enlace secundario"
-              name="hero_cta_secondary"
-              defaultValue={c.hero.ctaSecondary}
-              hint="Enlaza a cotización"
-            />
-          </div>
-        </Group>
-
-        <Group title="Indicadores del hero (3)">
-          {c.stats.map((s, i) => (
-            <div key={i} className="grid gap-5 sm:grid-cols-2">
-              <Field
-                label={`Dato ${i + 1} — valor`}
-                name={`stat_${i}_value`}
-                defaultValue={s.value}
-              />
-              <Field
-                label={`Dato ${i + 1} — etiqueta`}
-                name={`stat_${i}_label`}
-                defaultValue={s.label}
-              />
-            </div>
-          ))}
-        </Group>
-
-        <Group title="Sección «Líneas de producto»">
-          <Field
-            label="Antetítulo"
-            name="lines_eyebrow"
-            defaultValue={c.lines.eyebrow}
-          />
-          <Field
-            label="Título"
-            name="lines_title"
-            defaultValue={c.lines.title}
-          />
-        </Group>
-
-        <Group title="Sección «Destacados»">
-          <Field
-            label="Antetítulo"
-            name="featured_eyebrow"
-            defaultValue={c.featured.eyebrow}
-          />
-          <Field
-            label="Título"
-            name="featured_title"
-            defaultValue={c.featured.title}
-          />
-        </Group>
-
-        <Group title="Propuesta de valor (3 bloques)">
-          {c.valueProps.map((vp, i) => (
-            <div
-              key={i}
-              className="flex flex-col gap-4 rounded-xl border border-border p-4"
-            >
-              <Field
-                label={`Bloque ${i + 1} — título`}
-                name={`vp_${i}_title`}
-                defaultValue={vp.title}
-              />
-              <Field
-                label={`Bloque ${i + 1} — texto`}
-                name={`vp_${i}_desc`}
-                defaultValue={vp.desc}
-                textarea
-              />
-            </div>
-          ))}
-        </Group>
-
-        <Group title="Banner corporativo">
-          <Field
-            label="Antetítulo"
-            name="banner_eyebrow"
-            defaultValue={c.banner.eyebrow}
-          />
-          <Field
-            label="Título"
-            name="banner_title"
-            defaultValue={c.banner.title}
-            textarea
-          />
-          <Field
-            label="Subtítulo"
-            name="banner_subtitle"
-            defaultValue={c.banner.subtitle}
-            textarea
-          />
-          <Field
-            label="Botón"
-            name="banner_cta"
-            defaultValue={c.banner.cta}
-            hint="Enlaza a cotización"
-          />
-        </Group>
-
-        <div className="flex items-center gap-3">
-          <button type="submit" className={buttonClasses("primary")}>
-            Guardar cambios
-          </button>
+      <div className="mt-6 flex gap-1 border-b border-border">
+        {tabs.map((t) => (
           <Link
-            href="/"
-            target="_blank"
-            className={buttonClasses("secondary")}
+            key={t.key}
+            href={t.href}
+            className={cn(
+              "-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition-colors duration-200",
+              tab === t.key
+                ? "border-accent text-foreground"
+                : "border-transparent text-space-gray hover:text-foreground",
+            )}
           >
-            Ver inicio
+            {t.label}
           </Link>
-        </div>
-      </form>
+        ))}
+      </div>
+
+      {tab === "inicio" ? (
+        <form action={saveHomeContent} className="mt-8 flex flex-col gap-6">
+          <Group title="Hero (sección principal)">
+            <Field label="Antetítulo" name="hero_eyebrow" defaultValue={home.hero.eyebrow} />
+            <Field label="Título" name="hero_title" defaultValue={home.hero.title} textarea />
+            <Field label="Subtítulo" name="hero_subtitle" defaultValue={home.hero.subtitle} textarea />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Botón principal" name="hero_cta_primary" defaultValue={home.hero.ctaPrimary} hint="Enlaza al catálogo" />
+              <Field label="Enlace secundario" name="hero_cta_secondary" defaultValue={home.hero.ctaSecondary} hint="Enlaza a cotización" />
+            </div>
+          </Group>
+
+          <Group title="Indicadores del hero (3)">
+            {home.stats.map((s, i) => (
+              <div key={i} className="grid gap-5 sm:grid-cols-2">
+                <Field label={`Dato ${i + 1} — valor`} name={`stat_${i}_value`} defaultValue={s.value} />
+                <Field label={`Dato ${i + 1} — etiqueta`} name={`stat_${i}_label`} defaultValue={s.label} />
+              </div>
+            ))}
+          </Group>
+
+          <Group title="Sección «Líneas de producto»">
+            <Field label="Antetítulo" name="lines_eyebrow" defaultValue={home.lines.eyebrow} />
+            <Field label="Título" name="lines_title" defaultValue={home.lines.title} />
+          </Group>
+
+          <Group title="Sección «Destacados»">
+            <Field label="Antetítulo" name="featured_eyebrow" defaultValue={home.featured.eyebrow} />
+            <Field label="Título" name="featured_title" defaultValue={home.featured.title} />
+          </Group>
+
+          <Group title="Propuesta de valor (3 bloques)">
+            {home.valueProps.map((vp, i) => (
+              <div key={i} className="flex flex-col gap-4 rounded-xl border border-border p-4">
+                <Field label={`Bloque ${i + 1} — título`} name={`vp_${i}_title`} defaultValue={vp.title} />
+                <Field label={`Bloque ${i + 1} — texto`} name={`vp_${i}_desc`} defaultValue={vp.desc} textarea />
+              </div>
+            ))}
+          </Group>
+
+          <Group title="Banner corporativo">
+            <Field label="Antetítulo" name="banner_eyebrow" defaultValue={home.banner.eyebrow} />
+            <Field label="Título" name="banner_title" defaultValue={home.banner.title} textarea />
+            <Field label="Subtítulo" name="banner_subtitle" defaultValue={home.banner.subtitle} textarea />
+            <Field label="Botón" name="banner_cta" defaultValue={home.banner.cta} hint="Enlaza a cotización" />
+          </Group>
+
+          <Group title="Bloques adicionales (se muestran antes del banner)">
+            <BlocksEditor defaultBlocks={home.blocks} />
+          </Group>
+
+          <div>
+            <button type="submit" className={buttonClasses("primary")}>
+              Guardar Inicio
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form action={saveAboutContent} className="mt-8 flex flex-col gap-6">
+          <Group title="Encabezado">
+            <Field label="Antetítulo" name="about_eyebrow" defaultValue={about.eyebrow} />
+            <Field label="Título" name="about_title" defaultValue={about.title} textarea />
+            <Field label="Introducción" name="about_intro" defaultValue={about.intro} textarea />
+          </Group>
+
+          <Group title="Contenido (bloques)">
+            <BlocksEditor defaultBlocks={about.blocks} />
+          </Group>
+
+          <div>
+            <button type="submit" className={buttonClasses("primary")}>
+              Guardar Quiénes Somos
+            </button>
+          </div>
+        </form>
+      )}
     </AdminShell>
   );
 }

@@ -3,8 +3,9 @@ import { saveProduct, deleteProduct } from "@/app/admin/actions";
 import { buttonClasses } from "@/components/ui/button";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { DownloadsManager } from "@/components/admin/downloads-manager";
+import { SpecsManager } from "@/components/admin/specs-manager";
 import { cn } from "@/lib/utils";
-import { parseDownloads, type ProductWithImages } from "@/types";
+import { parseDownloads, parseSpecs, type ProductWithImages } from "@/types";
 
 const COLLECTIONS = ["etiquetas", "ribbons", "impresoras", "lectores"];
 
@@ -192,6 +193,13 @@ export function ProductForm({ product }: { product?: ProductWithImages }) {
           />
         </Field>
 
+        <Field
+          label="Características"
+          hint="Tabla de atributos (medidas, material, etc.). Cada fila se muestra u oculta de forma independiente."
+        >
+          <SpecsManager defaultSpecs={parseSpecs(product?.specs)} />
+        </Field>
+
         <fieldset className="flex flex-col gap-3 rounded-xl border border-border p-4">
           <legend className="px-1 font-mono text-[11px] uppercase tracking-label text-muted">
             Bloques visibles en la página del producto
@@ -203,7 +211,7 @@ export function ProductForm({ product }: { product?: ProductWithImages }) {
           />
           <Toggle
             name="show_specs"
-            label="Especificaciones (material, compatibilidad, disponibilidad)"
+            label="Tabla de características y disponibilidad"
             defaultChecked={product?.show_specs ?? true}
           />
           <Toggle

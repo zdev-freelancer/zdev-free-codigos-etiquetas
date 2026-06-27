@@ -22,7 +22,7 @@ const NAV: { href: string; label: string; match: (p: string) => boolean }[] = [
   },
   {
     href: "/admin/content",
-    label: "Contenido del inicio",
+    label: "Gestión de contenido",
     match: (p) => p.startsWith("/admin/content"),
   },
 ];

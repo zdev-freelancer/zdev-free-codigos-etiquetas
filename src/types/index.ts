@@ -33,6 +33,27 @@ export function parseDownloads(value: unknown): ProductDownload[] {
   );
 }
 
+/** A product characteristic row with its own visibility flag. */
+export type ProductSpec = { label: string; value: string; visible: boolean };
+
+/** Read the product's `specs` jsonb column as a typed list. */
+export function parseSpecs(value: unknown): ProductSpec[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (s): s is { label: string; value: string; visible?: unknown } =>
+        !!s &&
+        typeof s === "object" &&
+        typeof (s as { label?: unknown }).label === "string" &&
+        typeof (s as { value?: unknown }).value === "string",
+    )
+    .map((s) => ({
+      label: s.label,
+      value: s.value,
+      visible: s.visible !== false,
+    }));
+}
+
 // ---- App-level (client) types ----
 export interface CartItem {
   productId: string;

@@ -39,6 +39,23 @@ export async function saveProduct(formData: FormData) {
     downloads = [];
   }
 
+  // Parse the characteristics table (serialized JSON from SpecsManager).
+  let specs: { label: string; value: string; visible: boolean }[] = [];
+  try {
+    const parsed = JSON.parse(field(formData, "specs") || "[]");
+    if (Array.isArray(parsed)) {
+      specs = parsed
+        .map((s) => ({
+          label: String(s?.label ?? "").trim().slice(0, 80),
+          value: String(s?.value ?? "").trim().slice(0, 300),
+          visible: s?.visible !== false,
+        }))
+        .filter((s) => s.label || s.value);
+    }
+  } catch {
+    specs = [];
+  }
+
   const payload = {
     slug: field(formData, "slug"),
     name,
@@ -55,6 +72,7 @@ export async function saveProduct(formData: FormData) {
     show_specs: formData.get("show_specs") === "on",
     show_downloads: formData.get("show_downloads") === "on",
     downloads,
+    specs,
   };
 
   let productId = id;
@@ -120,6 +138,14 @@ export async function deleteProduct(formData: FormData) {
 export async function saveHomeContent(formData: FormData) {
   const { supabase, tenantId } = await requireAdmin();
 
+  let blocks: Json = [];
+  try {
+    const parsed = JSON.parse(field(formData, "blocks") || "[]");
+    if (Array.isArray(parsed)) blocks = parsed;
+  } catch {
+    blocks = [];
+  }
+
   const content = {
     hero: {
       eyebrow: field(formData, "hero_eyebrow"),
@@ -150,6 +176,7 @@ export async function saveHomeContent(formData: FormData) {
       subtitle: field(formData, "banner_subtitle"),
       cta: field(formData, "banner_cta"),
     },
+    blocks,
   };
 
   const { error } = await supabase
@@ -160,7 +187,38 @@ export async function saveHomeContent(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/content");
-  redirect("/admin/content");
+  redirect("/admin/content?tab=inicio");
+}
+
+/** Save the editable "Quiénes somos" content for the admin's tenant. */
+export async function saveAboutContent(formData: FormData) {
+  const { supabase, tenantId } = await requireAdmin();
+
+  let blocks: Json = [];
+  try {
+    const parsed = JSON.parse(field(formData, "blocks") || "[]");
+    if (Array.isArray(parsed)) blocks = parsed;
+  } catch {
+    blocks = [];
+  }
+
+  const content = {
+    eyebrow: field(formData, "about_eyebrow"),
+    title: field(formData, "about_title"),
+    intro: field(formData, "about_intro"),
+    blocks,
+  };
+
+  const { error } = await supabase
+    .from("tenants")
+    .update({ about_content: content })
+    .eq("id", tenantId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/", "layout");
+  revalidatePath("/quienes-somos");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?tab=quienes");
 }
 
 /** Update an order's tracking status (and, for sales, the fulfillment method). */

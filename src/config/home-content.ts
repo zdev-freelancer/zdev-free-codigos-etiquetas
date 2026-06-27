@@ -3,6 +3,8 @@
  * (jsonb) and managed from the admin panel (/admin/content). Any missing field
  * falls back to these defaults via `resolveHomeContent`.
  */
+import { parseBlocks, type BlogBlock } from "@/config/blog";
+
 export type Stat = { value: string; label: string };
 export type ValueProp = { title: string; desc: string };
 
@@ -19,6 +21,8 @@ export type HomeContent = {
   featured: { eyebrow: string; title: string };
   valueProps: ValueProp[];
   banner: { eyebrow: string; title: string; subtitle: string; cta: string };
+  /** Extra free-form blocks appended to the home page. */
+  blocks: BlogBlock[];
 };
 
 export const DEFAULT_HOME_CONTENT: HomeContent = {
@@ -64,6 +68,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
       "Impresoras, lectores e insumos con soporte técnico y asesoría especializada en todo el Perú.",
     cta: "Solicitar asesoría",
   },
+  blocks: [],
 };
 
 function str(v: unknown, fallback: string): string {
@@ -108,5 +113,6 @@ export function resolveHomeContent(raw: unknown): HomeContent {
       subtitle: str(c.banner?.subtitle, d.banner.subtitle),
       cta: str(c.banner?.cta, d.banner.cta),
     },
+    blocks: parseBlocks((c as { blocks?: unknown }).blocks),
   };
 }

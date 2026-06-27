@@ -252,6 +252,7 @@ export type Database = {
           name: string
           price: number
           pricing_mode: string
+          specs: Json
           show_description: boolean
           show_downloads: boolean
           show_specs: boolean
@@ -272,6 +273,7 @@ export type Database = {
           name: string
           price: number
           pricing_mode?: string
+          specs?: Json
           show_description?: boolean
           show_downloads?: boolean
           show_specs?: boolean
@@ -292,6 +294,7 @@ export type Database = {
           name?: string
           price?: number
           pricing_mode?: string
+          specs?: Json
           show_description?: boolean
           show_downloads?: boolean
           show_specs?: boolean
@@ -404,6 +407,7 @@ export type Database = {
           name: string
           slug: string
           status: string
+          about_content: Json
           home_content: Json
           theme: Json
           updated_at: string
@@ -417,6 +421,7 @@ export type Database = {
           name: string
           slug: string
           status?: string
+          about_content?: Json
           home_content?: Json
           theme?: Json
           updated_at?: string
@@ -430,6 +435,7 @@ export type Database = {
           name?: string
           slug?: string
           status?: string
+          about_content?: Json
           home_content?: Json
           theme?: Json
           updated_at?: string

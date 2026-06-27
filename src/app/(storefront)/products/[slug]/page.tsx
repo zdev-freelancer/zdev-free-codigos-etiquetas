@@ -7,7 +7,7 @@ import { Container } from "@/components/ui/container";
 import { AddToBagButton } from "@/components/cart/add-to-bag-button";
 import { buttonClasses } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
-import { parseDownloads } from "@/types";
+import { parseDownloads, parseSpecs } from "@/types";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -52,19 +52,7 @@ export default async function ProductPage({
   const isQuote = product.pricing_mode === "quote";
   const downloads = parseDownloads(product.downloads);
 
-  const specs: { label: string; value: string }[] = [];
-  if (product.material) specs.push({ label: "Material", value: product.material });
-  if (product.collection)
-    specs.push({ label: "Colección", value: capitalize(product.collection) });
-  if (product.compatibility?.length)
-    specs.push({
-      label: "Compatibilidad",
-      value: product.compatibility.join(" · "),
-    });
-  specs.push({
-    label: "Disponibilidad",
-    value: soldOut ? "Agotado" : "En stock",
-  });
+  const specRows = parseSpecs(product.specs).filter((s) => s.visible);
 
   return (
     <Container className="py-10 sm:py-16">
@@ -164,12 +152,12 @@ export default async function ProductPage({
             )}
           </div>
 
-          {/* Structural spec sheet */}
-          {product.show_specs && specs.length > 0 && (
+          {/* Characteristics table — per-row visibility */}
+          {product.show_specs && (
             <dl className="mt-12 border-t border-border">
-              {specs.map((spec) => (
+              {specRows.map((spec, i) => (
                 <div
-                  key={spec.label}
+                  key={i}
                   className="flex items-baseline justify-between gap-6 border-b border-border py-4"
                 >
                   <dt className="font-mono text-xs uppercase tracking-label text-muted">
@@ -180,6 +168,14 @@ export default async function ProductPage({
                   </dd>
                 </div>
               ))}
+              <div className="flex items-baseline justify-between gap-6 border-b border-border py-4">
+                <dt className="font-mono text-xs uppercase tracking-label text-muted">
+                  Disponibilidad
+                </dt>
+                <dd className="text-right text-sm text-foreground">
+                  {soldOut ? "Agotado" : "En stock"}
+                </dd>
+              </div>
             </dl>
           )}
 
