@@ -115,6 +115,53 @@ export async function deleteProduct(formData: FormData) {
   redirect("/admin");
 }
 
+/** Save the editable home-page content for the admin's tenant. */
+export async function saveHomeContent(formData: FormData) {
+  const { supabase, tenantId } = await requireAdmin();
+
+  const content = {
+    hero: {
+      eyebrow: field(formData, "hero_eyebrow"),
+      title: field(formData, "hero_title"),
+      subtitle: field(formData, "hero_subtitle"),
+      ctaPrimary: field(formData, "hero_cta_primary"),
+      ctaSecondary: field(formData, "hero_cta_secondary"),
+    },
+    stats: [0, 1, 2].map((i) => ({
+      value: field(formData, `stat_${i}_value`),
+      label: field(formData, `stat_${i}_label`),
+    })),
+    lines: {
+      eyebrow: field(formData, "lines_eyebrow"),
+      title: field(formData, "lines_title"),
+    },
+    featured: {
+      eyebrow: field(formData, "featured_eyebrow"),
+      title: field(formData, "featured_title"),
+    },
+    valueProps: [0, 1, 2].map((i) => ({
+      title: field(formData, `vp_${i}_title`),
+      desc: field(formData, `vp_${i}_desc`),
+    })),
+    banner: {
+      eyebrow: field(formData, "banner_eyebrow"),
+      title: field(formData, "banner_title"),
+      subtitle: field(formData, "banner_subtitle"),
+      cta: field(formData, "banner_cta"),
+    },
+  };
+
+  const { error } = await supabase
+    .from("tenants")
+    .update({ home_content: content })
+    .eq("id", tenantId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/content");
+  redirect("/admin/content");
+}
+
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();

@@ -339,6 +339,7 @@ export type Database = {
           name: string
           slug: string
           status: string
+          home_content: Json
           theme: Json
           updated_at: string
         }
@@ -351,6 +352,7 @@ export type Database = {
           name: string
           slug: string
           status?: string
+          home_content?: Json
           theme?: Json
           updated_at?: string
         }
@@ -363,6 +365,7 @@ export type Database = {
           name?: string
           slug?: string
           status?: string
+          home_content?: Json
           theme?: Json
           updated_at?: string
         }
