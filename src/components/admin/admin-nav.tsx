@@ -16,6 +16,11 @@ const NAV: { href: string; label: string; match: (p: string) => boolean }[] = [
     match: (p) => p.startsWith("/admin/orders"),
   },
   {
+    href: "/admin/blog",
+    label: "Blog",
+    match: (p) => p.startsWith("/admin/blog"),
+  },
+  {
     href: "/admin/content",
     label: "Contenido del inicio",
     match: (p) => p.startsWith("/admin/content"),

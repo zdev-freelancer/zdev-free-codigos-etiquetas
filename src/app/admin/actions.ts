@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import type { Currency } from "@/types";
+import type { Json } from "@/types/database.types";
 
 function field(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -182,6 +183,62 @@ export async function updateOrderStatus(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/orders");
+}
+
+/** Create or update a blog post. */
+export async function saveBlogPost(formData: FormData) {
+  const { supabase, tenantId } = await requireAdmin();
+  const id = field(formData, "id");
+  const status =
+    field(formData, "status") === "published" ? "published" : "draft";
+
+  let blocks: Json = [];
+  try {
+    const parsed = JSON.parse(field(formData, "blocks") || "[]");
+    if (Array.isArray(parsed)) blocks = parsed;
+  } catch {
+    blocks = [];
+  }
+
+  const payload = {
+    slug: field(formData, "slug"),
+    title: field(formData, "title"),
+    excerpt: field(formData, "excerpt") || null,
+    cover_image: field(formData, "cover_image") || null,
+    blocks,
+    status,
+    published_at: status === "published" ? new Date().toISOString() : null,
+  };
+
+  if (id) {
+    const { error } = await supabase
+      .from("blog_posts")
+      .update(payload)
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("blog_posts")
+      .insert({ ...payload, tenant_id: tenantId });
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath("/admin/blog");
+  revalidatePath("/blog");
+  redirect("/admin/blog");
+}
+
+/** Permanently delete a blog post. */
+export async function deleteBlogPost(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = field(formData, "id");
+  if (id) {
+    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+  }
+  revalidatePath("/admin/blog");
+  revalidatePath("/blog");
+  redirect("/admin/blog");
 }
 
 export async function signOutAction() {

@@ -14,9 +14,11 @@ const inputClass =
 export function ImageUpload({
   productId,
   defaultUrl = "",
+  name = "image_url",
 }: {
   productId?: string;
   defaultUrl?: string;
+  name?: string;
 }) {
   const [url, setUrl] = useState(defaultUrl);
   const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
@@ -62,7 +64,7 @@ export function ImageUpload({
 
       <input
         type="url"
-        name="image_url"
+        name={name}
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="URL pública (o sube un archivo arriba)"
