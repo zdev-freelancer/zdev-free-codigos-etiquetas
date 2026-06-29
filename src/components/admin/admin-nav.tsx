@@ -6,6 +6,11 @@ import { cn } from "@/lib/utils";
 
 const NAV: { href: string; label: string; match: (p: string) => boolean }[] = [
   {
+    href: "/admin/analytics",
+    label: "Analítica",
+    match: (p) => p.startsWith("/admin/analytics"),
+  },
+  {
     href: "/admin",
     label: "Productos",
     match: (p) => p === "/admin" || p.startsWith("/admin/products"),
