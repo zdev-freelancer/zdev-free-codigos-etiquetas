@@ -4,6 +4,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { DownloadsManager } from "@/components/admin/downloads-manager";
 import { SpecsManager } from "@/components/admin/specs-manager";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { cn } from "@/lib/utils";
 import { parseDownloads, parseSpecs, type ProductWithImages } from "@/types";
 
@@ -252,12 +253,13 @@ export function ProductForm({ product }: { product?: ProductWithImages }) {
                 Esta acción no se puede deshacer.
               </p>
             </div>
-            <button
-              type="submit"
-              className="h-11 shrink-0 rounded-full border border-border px-6 text-sm font-medium text-foreground transition-colors duration-300 ease-in-out hover:border-foreground"
+            <ConfirmSubmit
+              danger
+              message="¿Eliminar este producto? Esta acción no se puede deshacer."
+              confirmLabel="Eliminar"
             >
               Eliminar
-            </button>
+            </ConfirmSubmit>
           </div>
         </form>
       )}

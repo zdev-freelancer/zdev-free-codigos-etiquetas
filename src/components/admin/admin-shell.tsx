@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { FlashToast } from "@/components/ui/flash-toast";
 import { signOutAction } from "@/app/admin/actions";
 
 /** Admin panel shell: top bar + sidebar navigation + main content area. */
@@ -37,6 +39,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </aside>
         <main className="min-w-0 flex-1">{children}</main>
       </div>
+
+      <Suspense fallback={null}>
+        <FlashToast />
+      </Suspense>
     </div>
   );
 }

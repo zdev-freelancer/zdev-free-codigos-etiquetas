@@ -102,6 +102,28 @@ export function tenantBrand(tenant: Tenant): TenantBrand {
   };
 }
 
+export type SocialLink = { key: string; href: string };
+
+/** Build the footer's social links from the tenant's configured profiles. */
+export function tenantSocialLinks(tenant: Tenant): SocialLink[] {
+  const social = (tenant.social ?? {}) as Record<string, string>;
+  const links: SocialLink[] = [];
+  for (const key of [
+    "instagram",
+    "tiktok",
+    "x",
+    "facebook",
+    "youtube",
+    "linkedin",
+  ]) {
+    const href = social[key]?.trim();
+    if (href) links.push({ key, href });
+  }
+  const wa = (tenant.whatsapp ?? "").replace(/[^0-9]/g, "");
+  if (wa) links.push({ key: "whatsapp", href: `https://wa.me/${wa}` });
+  return links;
+}
+
 /**
  * Read a tenant's Mercado Pago credentials. Uses the service-role client
  * because `tenant_payment_config` is server-only (no anon/authenticated read

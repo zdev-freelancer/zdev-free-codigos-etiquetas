@@ -19,8 +19,6 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-
 export async function generateMetadata(): Promise<Metadata> {
   // Brand name comes from this front's tenant row; structural defaults
   // (tagline, description, keywords) stay in siteConfig as template defaults.
@@ -62,11 +60,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tenant = await getCurrentTenant();
+  const gaId = tenant.ga_id || process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html
       lang={siteConfig.locale}

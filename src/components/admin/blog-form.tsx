@@ -3,6 +3,7 @@ import { saveBlogPost, deleteBlogPost } from "@/app/admin/actions";
 import { buttonClasses } from "@/components/ui/button";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { BlocksEditor } from "@/components/admin/blocks-editor";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { parseBlocks } from "@/config/blog";
 import { cn } from "@/lib/utils";
 import type { BlogPost } from "@/lib/data/blog";
@@ -120,12 +121,13 @@ export function BlogForm({ post }: { post?: BlogPost }) {
                 Esta acción no se puede deshacer.
               </p>
             </div>
-            <button
-              type="submit"
-              className="h-11 shrink-0 rounded-full border border-border px-6 text-sm font-medium text-foreground transition-colors duration-300 ease-in-out hover:border-foreground"
+            <ConfirmSubmit
+              danger
+              message="¿Eliminar este artículo? Esta acción no se puede deshacer."
+              confirmLabel="Eliminar"
             >
               Eliminar
-            </button>
+            </ConfirmSubmit>
           </div>
         </form>
       )}

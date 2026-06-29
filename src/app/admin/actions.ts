@@ -118,7 +118,7 @@ export async function saveProduct(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/", "layout");
-  redirect("/admin");
+  redirect("/admin?ok=" + encodeURIComponent("Producto guardado"));
 }
 
 /** Permanently delete a product (cascades to images and inventory). */
@@ -131,7 +131,7 @@ export async function deleteProduct(formData: FormData) {
   }
   revalidatePath("/admin");
   revalidatePath("/", "layout");
-  redirect("/admin");
+  redirect("/admin?ok=" + encodeURIComponent("Producto eliminado"));
 }
 
 /** Save the editable home-page content for the admin's tenant. */
@@ -187,7 +187,9 @@ export async function saveHomeContent(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/content");
-  redirect("/admin/content?tab=inicio");
+  redirect(
+    "/admin/content?tab=inicio&ok=" + encodeURIComponent("Inicio actualizado"),
+  );
 }
 
 /** Save the editable "Quiénes somos" content for the admin's tenant. */
@@ -218,7 +220,10 @@ export async function saveAboutContent(formData: FormData) {
   revalidatePath("/", "layout");
   revalidatePath("/quienes-somos");
   revalidatePath("/admin/content");
-  redirect("/admin/content?tab=quienes");
+  redirect(
+    "/admin/content?tab=quienes&ok=" +
+      encodeURIComponent("Quiénes Somos actualizado"),
+  );
 }
 
 /** Update an order's tracking status (and, for sales, the fulfillment method). */
@@ -240,7 +245,11 @@ export async function updateOrderStatus(formData: FormData) {
   const { error } = await supabase.from("orders").update(update).eq("id", id);
   if (error) throw new Error(error.message);
 
+  const tab = field(formData, "tab") === "cotizacion" ? "cotizacion" : "ventas";
   revalidatePath("/admin/orders");
+  redirect(
+    `/admin/orders?tab=${tab}&ok=` + encodeURIComponent("Estado actualizado"),
+  );
 }
 
 /** Create or update a blog post. */
@@ -283,7 +292,7 @@ export async function saveBlogPost(formData: FormData) {
 
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
-  redirect("/admin/blog");
+  redirect("/admin/blog?ok=" + encodeURIComponent("Artículo guardado"));
 }
 
 /** Permanently delete a blog post. */
@@ -296,7 +305,54 @@ export async function deleteBlogPost(formData: FormData) {
   }
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
-  redirect("/admin/blog");
+  redirect("/admin/blog?ok=" + encodeURIComponent("Artículo eliminado"));
+}
+
+/** Save credentials & integration settings (public on tenants + server-only secrets). */
+export async function saveSettings(formData: FormData) {
+  const { supabase, tenantId } = await requireAdmin();
+
+  const social = {
+    instagram: field(formData, "social_instagram"),
+    tiktok: field(formData, "social_tiktok"),
+    x: field(formData, "social_x"),
+    facebook: field(formData, "social_facebook"),
+    youtube: field(formData, "social_youtube"),
+    linkedin: field(formData, "social_linkedin"),
+  };
+
+  const { error: tErr } = await supabase
+    .from("tenants")
+    .update({
+      ga_id: field(formData, "ga_id") || null,
+      whatsapp: field(formData, "whatsapp") || null,
+      contact_email: field(formData, "contact_email") || null,
+      contact_phone: field(formData, "contact_phone") || null,
+      address: field(formData, "address") || null,
+      social,
+    })
+    .eq("id", tenantId);
+  if (tErr) throw new Error(tErr.message);
+
+  const { error: sErr } = await supabase.from("tenant_payment_config").upsert(
+    {
+      tenant_id: tenantId,
+      mp_access_token: field(formData, "mp_access_token") || null,
+      mp_public_key: field(formData, "mp_public_key") || null,
+      mp_webhook_secret: field(formData, "mp_webhook_secret") || null,
+      brevo_api_key: field(formData, "brevo_api_key") || null,
+      brevo_sender_email: field(formData, "brevo_sender_email") || null,
+      brevo_sender_name: field(formData, "brevo_sender_name") || null,
+      email_subject: field(formData, "email_subject") || null,
+      email_body: field(formData, "email_body") || null,
+    },
+    { onConflict: "tenant_id" },
+  );
+  if (sErr) throw new Error(sErr.message);
+
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings?ok=" + encodeURIComponent("Configuración guardada"));
 }
 
 export async function signOutAction() {

@@ -2,7 +2,14 @@ import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { CartPanel } from "@/components/cart/cart-panel";
-import { getCurrentTenant, tenantBrand, tenantThemeVars } from "@/lib/tenant";
+import { WhatsAppBubble } from "@/components/layout/whatsapp-bubble";
+import { socialLinks } from "@/config/site";
+import {
+  getCurrentTenant,
+  tenantBrand,
+  tenantSocialLinks,
+  tenantThemeVars,
+} from "@/lib/tenant";
 
 export default async function StorefrontLayout({
   children,
@@ -12,6 +19,11 @@ export default async function StorefrontLayout({
   const tenant = await getCurrentTenant();
   const brand = tenantBrand(tenant);
 
+  let social = tenantSocialLinks(tenant);
+  if (social.length === 0) {
+    social = socialLinks.map((s) => ({ key: s.icon, href: s.href }));
+  }
+
   // `display: contents` keeps the body's flex layout intact while letting the
   // tenant's theme custom properties (--tenant-accent*) cascade to children.
   return (
@@ -19,8 +31,9 @@ export default async function StorefrontLayout({
       <AnnouncementBar />
       <Navbar brand={brand} />
       <main className="flex-1">{children}</main>
-      <Footer brand={brand} />
+      <Footer brand={brand} social={social} />
       <CartPanel />
+      <WhatsAppBubble phone={tenant.whatsapp} />
     </div>
   );
 }

@@ -1,23 +1,46 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
-import { catalogCategories, mainNav, siteConfig, socialLinks } from "@/config/site";
-import type { TenantBrand } from "@/lib/tenant";
+import { catalogCategories, mainNav, siteConfig } from "@/config/site";
+import type { SocialLink, TenantBrand } from "@/lib/tenant";
 import {
   InstagramIcon,
   TikTokIcon,
   XIcon,
   WhatsAppIcon,
+  FacebookIcon,
+  YouTubeIcon,
+  LinkedInIcon,
 } from "@/components/ui/icons";
 
-const SOCIAL_ICONS = {
-  instagram: InstagramIcon,
-  tiktok: TikTokIcon,
-  x: XIcon,
-  whatsapp: WhatsAppIcon,
-} as const;
+const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
+  {
+    instagram: InstagramIcon,
+    tiktok: TikTokIcon,
+    x: XIcon,
+    whatsapp: WhatsAppIcon,
+    facebook: FacebookIcon,
+    youtube: YouTubeIcon,
+    linkedin: LinkedInIcon,
+  };
 
-export function Footer({ brand }: { brand: TenantBrand }) {
+const SOCIAL_LABELS: Record<string, string> = {
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  x: "X",
+  whatsapp: "WhatsApp",
+  facebook: "Facebook",
+  youtube: "YouTube",
+  linkedin: "LinkedIn",
+};
+
+export function Footer({
+  brand,
+  social,
+}: {
+  brand: TenantBrand;
+  social: SocialLink[];
+}) {
   return (
     <footer className="border-t border-border">
       <Container className="py-16">
@@ -34,23 +57,26 @@ export function Footer({ brand }: { brand: TenantBrand }) {
               {siteConfig.description}
             </p>
 
-            <div className="mt-6 flex items-center gap-5">
-              {socialLinks.map((social) => {
-                const Icon = SOCIAL_ICONS[social.icon];
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className="text-muted transition-colors duration-300 ease-in-out hover:text-accent-link"
-                  >
-                    <Icon className="h-5 w-5" />
-                  </a>
-                );
-              })}
-            </div>
+            {social.length > 0 && (
+              <div className="mt-6 flex items-center gap-5">
+                {social.map((item) => {
+                  const Icon = SOCIAL_ICONS[item.key];
+                  if (!Icon) return null;
+                  return (
+                    <a
+                      key={item.key}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={SOCIAL_LABELS[item.key] ?? item.key}
+                      className="text-muted transition-colors duration-300 ease-in-out hover:text-accent-link"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div>

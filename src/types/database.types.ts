@@ -367,6 +367,11 @@ export type Database = {
       }
       tenant_payment_config: {
         Row: {
+          brevo_api_key: string | null
+          brevo_sender_email: string | null
+          brevo_sender_name: string | null
+          email_body: string | null
+          email_subject: string | null
           mp_access_token: string | null
           mp_public_key: string | null
           mp_webhook_secret: string | null
@@ -374,6 +379,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brevo_api_key?: string | null
+          brevo_sender_email?: string | null
+          brevo_sender_name?: string | null
+          email_body?: string | null
+          email_subject?: string | null
           mp_access_token?: string | null
           mp_public_key?: string | null
           mp_webhook_secret?: string | null
@@ -381,6 +391,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brevo_api_key?: string | null
+          brevo_sender_email?: string | null
+          brevo_sender_name?: string | null
+          email_body?: string | null
+          email_subject?: string | null
           mp_access_token?: string | null
           mp_public_key?: string | null
           mp_webhook_secret?: string | null
@@ -408,6 +423,12 @@ export type Database = {
           slug: string
           status: string
           about_content: Json
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          ga_id: string | null
+          social: Json
+          whatsapp: string | null
           home_content: Json
           theme: Json
           updated_at: string
@@ -422,6 +443,12 @@ export type Database = {
           slug: string
           status?: string
           about_content?: Json
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          ga_id?: string | null
+          social?: Json
+          whatsapp?: string | null
           home_content?: Json
           theme?: Json
           updated_at?: string
@@ -436,6 +463,12 @@ export type Database = {
           slug?: string
           status?: string
           about_content?: Json
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          ga_id?: string | null
+          social?: Json
+          whatsapp?: string | null
           home_content?: Json
           theme?: Json
           updated_at?: string

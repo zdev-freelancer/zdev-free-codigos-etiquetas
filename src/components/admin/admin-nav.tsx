@@ -25,6 +25,11 @@ const NAV: { href: string; label: string; match: (p: string) => boolean }[] = [
     label: "Gestión de contenido",
     match: (p) => p.startsWith("/admin/content"),
   },
+  {
+    href: "/admin/settings",
+    label: "Configuración",
+    match: (p) => p.startsWith("/admin/settings"),
+  },
 ];
 
 export function AdminNav() {

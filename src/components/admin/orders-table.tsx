@@ -213,6 +213,11 @@ function OrderModal({
           className="mt-6 flex flex-col gap-4 border-t border-border pt-5"
         >
           <input type="hidden" name="id" value={order.id} />
+          <input
+            type="hidden"
+            name="tab"
+            value={kind === "quote" ? "cotizacion" : "ventas"}
+          />
 
           {kind === "sale" ? (
             <label className="flex flex-col gap-2">

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentTenant } from "@/lib/tenant";
 import { generateTrackingCode } from "@/config/orders";
+import { sendTenantEmail } from "@/lib/email";
 
 function f(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -64,6 +65,13 @@ export async function requestQuote(formData: FormData) {
       price_at_purchase: 0,
     });
   }
+
+  // Best-effort confirmation email (no-op if Brevo isn't configured).
+  await sendTenantEmail(tenant.id, email, {
+    nombre: name || "",
+    tienda: tenant.name,
+    codigo: code,
+  });
 
   redirect(`/cotizar?enviado=1&code=${code}`);
 }
