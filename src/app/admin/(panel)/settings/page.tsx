@@ -3,7 +3,6 @@ import { requireAdmin } from "@/lib/auth";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
 import { saveSettings } from "@/app/admin/actions";
-import { AdminShell } from "@/components/admin/admin-shell";
 import { SecretInput } from "@/components/ui/secret-input";
 import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { DEFAULT_EMAIL_BODY, DEFAULT_EMAIL_SUBJECT } from "@/config/email";
@@ -81,8 +80,7 @@ export default async function SettingsPage() {
   const social = (tenant.social ?? {}) as Record<string, string>;
 
   return (
-    <AdminShell>
-      <form action={saveSettings} className="flex flex-col gap-6">
+    <form action={saveSettings} className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Configuración
@@ -244,7 +242,6 @@ export default async function SettingsPage() {
             Guardar configuración
           </ConfirmSubmit>
         </div>
-      </form>
-    </AdminShell>
+    </form>
   );
 }

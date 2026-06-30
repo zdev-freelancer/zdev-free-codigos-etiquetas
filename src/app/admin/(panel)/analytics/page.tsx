@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/auth";
 import { getSalesAnalytics } from "@/lib/data/analytics";
-import { AdminShell } from "@/components/admin/admin-shell";
 import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
 
 export const metadata: Metadata = {
@@ -10,11 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AnalyticsPage() {
-  await requireAdmin();
   const sales = await getSalesAnalytics();
 
   return (
-    <AdminShell>
+    <>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Analítica
@@ -28,6 +25,6 @@ export default async function AnalyticsPage() {
       <div className="mt-6">
         <AnalyticsDashboard sales={sales} />
       </div>
-    </AdminShell>
+    </>
   );
 }

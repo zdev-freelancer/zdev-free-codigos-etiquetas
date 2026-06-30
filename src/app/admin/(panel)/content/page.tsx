@@ -1,9 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/auth";
 import { getCurrentTenant } from "@/lib/tenant";
 import { saveHomeContent, saveAboutContent } from "@/app/admin/actions";
-import { AdminShell } from "@/components/admin/admin-shell";
 import { BlocksEditor } from "@/components/admin/blocks-editor";
 import { buttonClasses } from "@/components/ui/button";
 import { resolveHomeContent } from "@/config/home-content";
@@ -73,7 +71,6 @@ export default async function ContentPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  await requireAdmin();
   const sp = await searchParams;
   const tab = sp.tab === "quienes" ? "quienes" : "inicio";
 
@@ -87,7 +84,7 @@ export default async function ContentPage({
   ];
 
   return (
-    <AdminShell>
+    <>
       <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         Gestión de contenido
       </h1>
@@ -185,6 +182,6 @@ export default async function ContentPage({
           </div>
         </form>
       )}
-    </AdminShell>
+    </>
   );
 }

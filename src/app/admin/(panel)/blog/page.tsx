@@ -1,8 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/auth";
 import { getAllPosts } from "@/lib/data/blog";
-import { AdminShell } from "@/components/admin/admin-shell";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +18,10 @@ function fmtDate(s: string) {
 }
 
 export default async function AdminBlogPage() {
-  await requireAdmin();
   const posts = await getAllPosts();
 
   return (
-    <AdminShell>
+    <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -93,6 +90,6 @@ export default async function AdminBlogPage() {
           </table>
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

@@ -1,8 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/auth";
 import { getOrders } from "@/lib/data/orders";
-import { AdminShell } from "@/components/admin/admin-shell";
 import { OrdersTable } from "@/components/admin/orders-table";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +14,6 @@ export default async function OrdersPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  await requireAdmin();
   const sp = await searchParams;
   const kind: "sale" | "quote" = sp.tab === "cotizacion" ? "quote" : "sale";
   const orders = await getOrders(kind);
@@ -31,7 +28,7 @@ export default async function OrdersPage({
   ];
 
   return (
-    <AdminShell>
+    <>
       <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         Pedidos
       </h1>
@@ -56,6 +53,6 @@ export default async function OrdersPage({
       <div className="mt-8">
         <OrdersTable orders={orders} kind={kind} />
       </div>
-    </AdminShell>
+    </>
   );
 }

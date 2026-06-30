@@ -1,8 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/auth";
 import { getProducts } from "@/lib/data/products";
-import { AdminShell } from "@/components/admin/admin-shell";
 import { buttonClasses } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 
@@ -12,11 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminDashboardPage() {
-  await requireAdmin();
   const products = await getProducts();
 
   return (
-    <AdminShell>
+    <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -83,6 +80,6 @@ export default async function AdminDashboardPage() {
           </tbody>
         </table>
       </div>
-    </AdminShell>
+    </>
   );
 }
