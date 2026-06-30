@@ -7,8 +7,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Run on all paths except static assets and image files.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
-  ],
+  // Only the admin area is authenticated. Running the Supabase session refresh
+  // (a network round-trip to Auth) on every storefront request was pure latency
+  // for pages that never read a session — the cart is client-side and orders are
+  // guest checkouts. Scope it to /admin so public pages stay fast.
+  matcher: ["/admin/:path*"],
 };

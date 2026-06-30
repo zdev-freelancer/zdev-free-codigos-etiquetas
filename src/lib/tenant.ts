@@ -1,10 +1,13 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Tables } from "@/types/database.types";
 
 export type Tenant = Tables<"tenants">;
+
+/** Cache tag for every tenant row read — revalidated when settings/content change. */
+export const TENANT_TAG = "tenant";
 
 /** Shape of the `tenants.theme` JSON column (all optional). */
 export interface TenantTheme {
@@ -14,14 +17,16 @@ export interface TenantTheme {
 }
 
 /**
- * Resolve a storefront tenant by its URL slug (`/s/[tenant]`).
- * Cached per request so a layout + its pages share one query.
- * Public (anon) read — only `status = 'active'` tenants are visible via RLS.
+ * Cross-request cache for the tenant row. Uses the service-role client (no
+ * cookies) so it can live in Next's data cache instead of hitting Supabase on
+ * every request — the tenant row only holds public columns and changes rarely.
+ * Invalidated on demand via `revalidateTag(TENANT_TAG)` when the admin saves
+ * settings or content. Keyed by slug.
  */
-export const getTenantBySlug = cache(
+const loadTenantBySlug = unstable_cache(
   async (slug: string): Promise<Tenant | null> => {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const admin = createAdminClient();
+    const { data, error } = await admin
       .from("tenants")
       .select("*")
       .eq("slug", slug)
@@ -31,6 +36,17 @@ export const getTenantBySlug = cache(
     if (error) throw error;
     return data ?? null;
   },
+  ["tenant-by-slug"],
+  { revalidate: 300, tags: [TENANT_TAG] },
+);
+
+/**
+ * Resolve a storefront tenant by its URL slug. `cache()` dedupes within a single
+ * render; `unstable_cache` shares the result across requests (see above).
+ * Public read — only `status = 'active'` tenants resolve.
+ */
+export const getTenantBySlug = cache(
+  (slug: string): Promise<Tenant | null> => loadTenantBySlug(slug),
 );
 
 /** Resolve a tenant by slug or render the 404 page. */

@@ -17,12 +17,8 @@ import {
   YAxis,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import {
-  CATEGORY_LIST,
-  PERIODS,
-  getAnalytics,
-  type Period,
-} from "@/lib/analytics-mock";
+import { PERIODS, getAnalytics, type Period } from "@/lib/analytics-mock";
+import type { SalesAnalytics } from "@/lib/data/analytics";
 
 const COLORS = ["#1b9fe0", "#2a2a8c", "#22b8a6", "#e0a234", "#8a8275"];
 const AXIS = { fill: "#86868b", fontSize: 11 };
@@ -38,10 +34,10 @@ const num = (n: number) => new Intl.NumberFormat("es-PE").format(Math.round(n));
 const signed = (n: number) => `${n >= 0 ? "+" : ""}${(n * 100).toFixed(1)}%`;
 
 const MODULES = [
-  { key: "sales", label: "Ventas y productos" },
-  { key: "visitors", label: "Visitantes" },
-  { key: "funnel", label: "Embudo" },
-  { key: "interaction", label: "Interacción" },
+  { key: "sales", label: "Ventas y productos", demo: false },
+  { key: "visitors", label: "Visitantes", demo: true },
+  { key: "funnel", label: "Embudo", demo: true },
+  { key: "interaction", label: "Interacción", demo: true },
 ] as const;
 type ModuleKey = (typeof MODULES)[number]["key"];
 
@@ -155,10 +151,13 @@ const tooltipStyle = {
   boxShadow: "0 8px 24px -12px rgba(10,10,10,.2)",
 };
 
-export function AnalyticsDashboard() {
+export function AnalyticsDashboard({ sales }: { sales: SalesAnalytics }) {
   const [period, setPeriod] = useState<Period>("monthly");
   const [module, setModule] = useState<ModuleKey>("sales");
+  // Sales: real data from the DB. Other modules: demo data until tracking exists.
   const data = useMemo(() => getAnalytics(period), [period]);
+  const sd = sales.periods[period];
+  const categories = sales.categories;
 
   const SOURCES = [
     { key: "organic", label: "Orgánico", color: COLORS[0] },
@@ -167,7 +166,7 @@ export function AnalyticsDashboard() {
     { key: "referral", label: "Referido", color: COLORS[3] },
   ];
   const sourceToggle = useToggle(SOURCES.map((s) => s.key));
-  const catToggle = useToggle([...CATEGORY_LIST]);
+  const catToggle = useToggle(categories);
   const mixToggle = useToggle(["nuevos", "recurrentes"]);
 
   return (
@@ -181,13 +180,18 @@ export function AnalyticsDashboard() {
               type="button"
               onClick={() => setModule(m.key)}
               className={cn(
-                "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 module === m.key
                   ? "bg-surface text-foreground"
                   : "text-space-gray hover:text-foreground",
               )}
             >
               {m.label}
+              {m.demo && (
+                <span className="rounded-full bg-surface px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-label text-muted">
+                  demo
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -215,22 +219,19 @@ export function AnalyticsDashboard() {
         {module === "sales" && (
           <div className="flex flex-col gap-5">
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              <Stat label="Ingresos" value={soles(data.sales.revenue)} delta={data.sales.revenueDelta} />
-              <Stat label="Pedidos" value={num(data.sales.orders)} delta={data.sales.ordersDelta} />
-              <Stat label="Ticket promedio" value={soles(data.sales.aov)} delta={data.sales.aovDelta} />
-              <Stat
-                label="Devoluciones (prom.)"
-                value={`${(data.sales.refunds.reduce((s, r) => s + r.rate, 0) / data.sales.refunds.length).toFixed(1)}%`}
-              />
+              <Stat label="Ingresos" value={soles(sd.revenue)} delta={sd.revenueDelta ?? undefined} />
+              <Stat label="Pedidos" value={num(sd.orders)} delta={sd.ordersDelta ?? undefined} />
+              <Stat label="Ticket promedio" value={soles(sd.aov)} delta={sd.aovDelta ?? undefined} />
+              <Stat label="Pedidos entregados" value={num(sd.delivered)} />
             </div>
 
-            <Card title={`Ingresos y pedidos · ${data.prevLabel}`}>
+            <Card title={`Ingresos y pedidos · ${sd.prevLabel}`}>
               <ResponsiveContainer width="100%" height={280}>
-                <ComposedChart data={data.sales.series} margin={{ left: -8, right: 8 }}>
+                <ComposedChart data={sd.series} margin={{ left: -8, right: 8 }}>
                   <CartesianGrid stroke={GRID} vertical={false} />
                   <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} />
                   <YAxis yAxisId="l" tick={AXIS} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
-                  <YAxis yAxisId="r" orientation="right" tick={AXIS} tickLine={false} axisLine={false} />
+                  <YAxis yAxisId="r" orientation="right" tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={tooltipStyle}
                     formatter={(v, n) =>
@@ -247,36 +248,40 @@ export function AnalyticsDashboard() {
             <div className="grid gap-5 lg:grid-cols-2">
               <Card title="Ingresos por categoría">
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={data.sales.category} margin={{ left: -8 }}>
+                  <BarChart data={sd.category} margin={{ left: -8 }}>
                     <CartesianGrid stroke={GRID} vertical={false} />
                     <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} />
                     <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
                     <Tooltip contentStyle={tooltipStyle} formatter={(v) => soles(Number(v))} />
-                    {CATEGORY_LIST.map((c, i) => (
-                      <Bar key={c} dataKey={c} stackId="c" fill={COLORS[i]} hide={!catToggle.isOn(c)} radius={i === CATEGORY_LIST.length - 1 ? [4, 4, 0, 0] : undefined} />
+                    {categories.map((c, i) => (
+                      <Bar key={c} dataKey={c} stackId="c" fill={COLORS[i % COLORS.length]} hide={!catToggle.isOn(c)} radius={i === categories.length - 1 ? [4, 4, 0, 0] : undefined} />
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
                 <LegendChips
                   state={catToggle}
-                  items={CATEGORY_LIST.map((c, i) => ({ key: c, label: c, color: COLORS[i] }))}
+                  items={categories.map((c, i) => ({ key: c, label: c, color: COLORS[i % COLORS.length] }))}
                 />
               </Card>
 
-              <Card title="Tasa de devolución por producto">
-                <ul className="flex flex-col gap-3">
-                  {data.sales.refunds.map((r) => (
-                    <li key={r.name}>
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="truncate text-foreground">{r.name}</span>
-                        <span className="shrink-0 font-medium text-space-gray">{r.rate.toFixed(1)}%</span>
-                      </div>
-                      <div className="mt-1.5 h-1.5 rounded-full bg-surface">
-                        <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(r.rate * 10, 100)}%` }} />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+              <Card title="Pedidos por estado">
+                {sd.byStatus.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted">Sin pedidos en este periodo.</p>
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {sd.byStatus.map((s) => (
+                      <li key={s.label}>
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <span className="truncate text-foreground">{s.label}</span>
+                          <span className="shrink-0 font-medium text-space-gray">{num(s.count)}</span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 rounded-full bg-surface">
+                          <div className="h-full rounded-full bg-accent" style={{ width: `${(s.count / sd.byStatus[0].count) * 100}%` }} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Card>
             </div>
 
@@ -291,18 +296,35 @@ export function AnalyticsDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.sales.topProducts.map((p) => (
-                      <tr key={p.name} className="border-b border-border last:border-0">
-                        <td className="px-3 py-3 font-medium text-foreground">{p.name}</td>
-                        <td className="px-3 py-3 text-space-gray">{p.category}</td>
-                        <td className="px-3 py-3 text-space-gray">{num(p.units)}</td>
-                        <td className="px-3 py-3 text-space-gray">{soles(p.revenue)}</td>
-                        <td className="px-3 py-3 text-space-gray">{p.stock}</td>
-                        <td className={cn("px-3 py-3 font-medium", p.trend >= 0 ? "text-[#15803d]" : "text-[#b91c1c]")}>
-                          {p.trend >= 0 ? "▲" : "▼"} {signed(p.trend)}
+                    {sd.topProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-3 py-8 text-center text-sm text-muted">
+                          Sin ventas en este periodo.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      sd.topProducts.map((p) => (
+                        <tr key={p.name} className="border-b border-border last:border-0">
+                          <td className="px-3 py-3 font-medium text-foreground">{p.name}</td>
+                          <td className="px-3 py-3 text-space-gray">{p.category}</td>
+                          <td className="px-3 py-3 text-space-gray">{num(p.units)}</td>
+                          <td className="px-3 py-3 text-space-gray">{soles(p.revenue)}</td>
+                          <td className="px-3 py-3 text-space-gray">{p.stock}</td>
+                          <td
+                            className={cn(
+                              "px-3 py-3 font-medium",
+                              p.trend === null
+                                ? "text-muted"
+                                : p.trend >= 0
+                                  ? "text-[#15803d]"
+                                  : "text-[#b91c1c]",
+                            )}
+                          >
+                            {p.trend === null ? "—" : `${p.trend >= 0 ? "▲" : "▼"} ${signed(p.trend)}`}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

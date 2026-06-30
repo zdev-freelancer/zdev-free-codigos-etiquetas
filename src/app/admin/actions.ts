@@ -1,9 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
+import { TENANT_TAG } from "@/lib/tenant";
+import { CATALOG_TAG } from "@/lib/data/products";
 import type { Currency } from "@/types";
 import type { Json } from "@/types/database.types";
 
@@ -116,6 +118,7 @@ export async function saveProduct(formData: FormData) {
     });
   }
 
+  revalidateTag(CATALOG_TAG, "max");
   revalidatePath("/admin");
   revalidatePath("/", "layout");
   redirect("/admin?ok=" + encodeURIComponent("Producto guardado"));
@@ -129,6 +132,7 @@ export async function deleteProduct(formData: FormData) {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) throw new Error(error.message);
   }
+  revalidateTag(CATALOG_TAG, "max");
   revalidatePath("/admin");
   revalidatePath("/", "layout");
   redirect("/admin?ok=" + encodeURIComponent("Producto eliminado"));
@@ -185,6 +189,7 @@ export async function saveHomeContent(formData: FormData) {
     .eq("id", tenantId);
   if (error) throw new Error(error.message);
 
+  revalidateTag(TENANT_TAG, "max");
   revalidatePath("/", "layout");
   revalidatePath("/admin/content");
   redirect(
@@ -217,6 +222,7 @@ export async function saveAboutContent(formData: FormData) {
     .eq("id", tenantId);
   if (error) throw new Error(error.message);
 
+  revalidateTag(TENANT_TAG, "max");
   revalidatePath("/", "layout");
   revalidatePath("/quienes-somos");
   revalidatePath("/admin/content");
@@ -350,6 +356,7 @@ export async function saveSettings(formData: FormData) {
   );
   if (sErr) throw new Error(sErr.message);
 
+  revalidateTag(TENANT_TAG, "max");
   revalidatePath("/", "layout");
   revalidatePath("/admin/settings");
   redirect("/admin/settings?ok=" + encodeURIComponent("Configuración guardada"));
