@@ -3,11 +3,12 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { CartPanel } from "@/components/cart/cart-panel";
 import { WhatsAppBubble } from "@/components/layout/whatsapp-bubble";
-import { socialLinks } from "@/config/site";
+import { socialLinks, siteConfig } from "@/config/site";
 import {
   getCurrentTenant,
   tenantBrand,
   tenantSocialLinks,
+  tenantWhatsAppLink,
   tenantThemeVars,
 } from "@/lib/tenant";
 
@@ -24,16 +25,26 @@ export default async function StorefrontLayout({
     social = socialLinks.map((s) => ({ key: s.icon, href: s.href }));
   }
 
+  // One configured number drives every WhatsApp entry point. Quote CTAs fall
+  // back to the static link only when no number is set yet.
+  const bubbleHref = tenantWhatsAppLink(
+    tenant,
+    "Hola 👋, quisiera más información sobre sus productos.",
+  );
+  const quoteHref =
+    tenantWhatsAppLink(tenant, "Hola, quisiera solicitar una cotización.") ??
+    siteConfig.quoteUrl;
+
   // `display: contents` keeps the body's flex layout intact while letting the
   // tenant's theme custom properties (--tenant-accent*) cascade to children.
   return (
     <div style={tenantThemeVars(tenant.theme)} className="contents">
       <AnnouncementBar />
-      <Navbar brand={brand} />
+      <Navbar brand={brand} quoteHref={quoteHref} />
       <main className="flex-1">{children}</main>
       <Footer brand={brand} social={social} />
       <CartPanel />
-      <WhatsAppBubble phone={tenant.whatsapp} />
+      <WhatsAppBubble href={bubbleHref} />
     </div>
   );
 }

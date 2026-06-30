@@ -1,13 +1,12 @@
 import { WhatsAppIcon } from "@/components/ui/icons";
 
 /** Floating WhatsApp button (storefront). No-op if no number is configured. */
-export function WhatsAppBubble({ phone }: { phone: string | null | undefined }) {
-  const digits = (phone ?? "").replace(/[^0-9]/g, "");
-  if (!digits) return null;
+export function WhatsAppBubble({ href }: { href: string | null | undefined }) {
+  if (!href) return null;
 
   return (
     <a
-      href={`https://wa.me/${digits}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Escríbenos por WhatsApp"

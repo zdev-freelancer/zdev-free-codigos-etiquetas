@@ -5,7 +5,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { BlogBlocks } from "@/components/blog/blog-blocks";
 import { siteConfig } from "@/config/site";
 import { resolveAboutContent } from "@/config/about-content";
-import { getCurrentTenant } from "@/lib/tenant";
+import { getCurrentTenant, tenantWhatsAppLink } from "@/lib/tenant";
 
 export const metadata: Metadata = {
   title: "Quiénes Somos",
@@ -16,6 +16,9 @@ export const metadata: Metadata = {
 export default async function QuienesSomos() {
   const tenant = await getCurrentTenant();
   const c = resolveAboutContent(tenant.about_content);
+  const quoteHref =
+    tenantWhatsAppLink(tenant, "Hola, quisiera solicitar asesoría.") ??
+    siteConfig.quoteUrl;
 
   return (
     <>
@@ -53,7 +56,7 @@ export default async function QuienesSomos() {
                 ¿Hablamos de tu proyecto de identificación?
               </h2>
               <Link
-                href={siteConfig.quoteUrl}
+                href={quoteHref}
                 className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-sm font-medium text-accent-2 transition-opacity duration-300 ease-in-out hover:opacity-90"
               >
                 Solicitar asesoría

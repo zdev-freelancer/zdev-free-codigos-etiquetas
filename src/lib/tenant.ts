@@ -120,6 +120,35 @@ export function tenantBrand(tenant: Tenant): TenantBrand {
 
 export type SocialLink = { key: string; href: string };
 
+/**
+ * Normalize a stored WhatsApp number to wa.me digits, defaulting the country
+ * code to Peru. A bare 9-digit mobile (e.g. "958250742") gets "51" prepended so
+ * the link actually dials; numbers that already include a country code are kept.
+ */
+export function normalizeWhatsApp(
+  raw: string | null | undefined,
+): string | null {
+  const digits = (raw ?? "").replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  if (digits.length === 9 && digits.startsWith("9")) return `51${digits}`;
+  return digits;
+}
+
+/**
+ * Build a wa.me link from the tenant's configured WhatsApp number, optionally
+ * pre-filling a message. Single source of truth for every WhatsApp entry point
+ * (footer, floating bubble, quote/consult CTAs). Returns null when unset.
+ */
+export function tenantWhatsAppLink(
+  tenant: Tenant,
+  message?: string,
+): string | null {
+  const num = normalizeWhatsApp(tenant.whatsapp);
+  if (!num) return null;
+  const base = `https://wa.me/${num}`;
+  return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+}
+
 /** Build the footer's social links from the tenant's configured profiles. */
 export function tenantSocialLinks(tenant: Tenant): SocialLink[] {
   const social = (tenant.social ?? {}) as Record<string, string>;
@@ -135,7 +164,7 @@ export function tenantSocialLinks(tenant: Tenant): SocialLink[] {
     const href = social[key]?.trim();
     if (href) links.push({ key, href });
   }
-  const wa = (tenant.whatsapp ?? "").replace(/[^0-9]/g, "");
+  const wa = normalizeWhatsApp(tenant.whatsapp);
   if (wa) links.push({ key: "whatsapp", href: `https://wa.me/${wa}` });
   return links;
 }

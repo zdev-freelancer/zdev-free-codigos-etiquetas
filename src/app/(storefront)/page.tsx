@@ -8,7 +8,7 @@ import { catalogCategories, siteConfig } from "@/config/site";
 import { resolveHomeContent } from "@/config/home-content";
 import { BlogBlocks } from "@/components/blog/blog-blocks";
 import { getProducts } from "@/lib/data/products";
-import { getCurrentTenant } from "@/lib/tenant";
+import { getCurrentTenant, tenantWhatsAppLink } from "@/lib/tenant";
 
 export default async function Home() {
   const [products, tenant] = await Promise.all([
@@ -16,6 +16,9 @@ export default async function Home() {
     getCurrentTenant(),
   ]);
   const c = resolveHomeContent(tenant.home_content);
+  const quoteHref =
+    tenantWhatsAppLink(tenant, "Hola, quisiera solicitar una cotización.") ??
+    siteConfig.quoteUrl;
   const featured = products.filter((p) => p.is_featured);
   const showcase = (featured.length ? featured : products).slice(0, 8);
 
@@ -39,7 +42,7 @@ export default async function Home() {
                 {c.hero.ctaPrimary}
               </Link>
               <Link
-                href={siteConfig.quoteUrl}
+                href={quoteHref}
                 className="inline-flex items-center gap-1 text-sm font-medium text-accent-link transition-opacity duration-300 ease-in-out hover:opacity-70"
               >
                 {c.hero.ctaSecondary} <span aria-hidden>›</span>
@@ -189,7 +192,7 @@ export default async function Home() {
                   </p>
                 </div>
                 <Link
-                  href={siteConfig.quoteUrl}
+                  href={quoteHref}
                   className="inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-white px-7 text-sm font-medium text-accent-2 transition-opacity duration-300 ease-in-out hover:opacity-90"
                 >
                   {c.banner.cta}

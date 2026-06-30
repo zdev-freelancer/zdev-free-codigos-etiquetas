@@ -7,10 +7,16 @@ import { Logo } from "@/components/ui/logo";
 import { CartButton } from "@/components/cart/cart-button";
 import { MenuIcon, CloseIcon } from "@/components/ui/icons";
 import { buttonClasses } from "@/components/ui/button";
-import { mainNav, catalogCategories, siteConfig } from "@/config/site";
+import { mainNav, catalogCategories } from "@/config/site";
 import type { TenantBrand } from "@/lib/tenant";
 
-export function Navbar({ brand }: { brand: TenantBrand }) {
+export function Navbar({
+  brand,
+  quoteHref,
+}: {
+  brand: TenantBrand;
+  quoteHref: string;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
 
@@ -104,7 +110,7 @@ export function Navbar({ brand }: { brand: TenantBrand }) {
               Rastrear pedido
             </Link>
             <Link
-              href={siteConfig.quoteUrl}
+              href={quoteHref}
               className={buttonClasses(
                 "primary",
                 "hidden h-10 px-5 text-[13px] sm:inline-flex",
@@ -169,7 +175,7 @@ export function Navbar({ brand }: { brand: TenantBrand }) {
                 Rastrear pedido
               </Link>
               <Link
-                href={siteConfig.quoteUrl}
+                href={quoteHref}
                 onClick={() => setMobileOpen(false)}
                 className={buttonClasses("primary", "mt-4")}
               >
