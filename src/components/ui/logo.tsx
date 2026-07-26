@@ -1,8 +1,15 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 // Fallback brand colors (Códigos y Etiquetas) when a tenant has no theme set.
 const DEFAULT_ACCENT = "#1b9fe0";
 const DEFAULT_ACCENT2 = "#2a2a8c";
+
+/**
+ * This deployment's own brand mark (`public/logo.png`). One front = one tenant,
+ * so each deploy ships its logo here; a tenant-uploaded `logo_url` still wins.
+ */
+const DEFAULT_LOGO = "/logo.png";
 
 /**
  * Generic brand emblem — concentric ring + open "C" + "e", rendered with the
@@ -72,14 +79,14 @@ export function LogoMark({
 export function Logo({
   name = "Códigos y Etiquetas",
   logoUrl = null,
-  accent,
-  accent2,
   className,
   markClassName,
   withText = true,
 }: {
   name?: string;
   logoUrl?: string | null;
+  /** Accepted for callers that theme the standalone `LogoMark`; the lockup
+   *  renders the brand image instead. */
   accent?: string;
   accent2?: string;
   className?: string;
@@ -89,6 +96,8 @@ export function Logo({
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       {logoUrl ? (
+        // A tenant-uploaded logo can live on any host, so it stays a plain <img>
+        // rather than next/image (which would need the host allow-listed).
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={logoUrl}
@@ -96,11 +105,13 @@ export function Logo({
           className={cn("h-8 w-8 shrink-0 object-contain", markClassName)}
         />
       ) : (
-        <LogoMark
-          className={cn("h-8 w-8 shrink-0", markClassName)}
-          accent={accent}
-          accent2={accent2}
-          label={name}
+        <Image
+          src={DEFAULT_LOGO}
+          alt={name}
+          width={80}
+          height={80}
+          priority
+          className={cn("h-8 w-8 shrink-0 object-contain", markClassName)}
         />
       )}
       {withText && (
